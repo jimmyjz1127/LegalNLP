@@ -1,7 +1,14 @@
+'''
+    @author : James Zhang 
+    @since  : October 4, 2023
+'''
+
+
 import numpy as np 
 import pandas as pd 
 import re 
 import os 
+import sys
 import json 
 import nltk
 import string
@@ -17,10 +24,9 @@ from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
 
 class tfidf_corp:
     '''
+        Class definition of tfidf_corp object for building TF-IDF matrix of document corpus and performing 
+        cosine similarity searches.
     
-    '''
-
-    '''
         Document Format
             {
                 name : String
@@ -70,12 +76,10 @@ class tfidf_corp:
         query_vector = self.vectorizer.transform([query])
         similarities = linear_kernel(query_vector, self.corpus_tfidf).flatten()
 
-        ranked_documents = [(self.documents[i]['name'], score) for i, score in enumerate(similarities)]
+        ranked_documents = [(self.documents[i]['name'], score) for i, score in enumerate(similarities) if score > 0]
         ranked_documents.sort(key=lambda x: x[1], reverse=True)
 
-        for doc, score in ranked_documents:
-            print(f"Document: {doc}")
-            print(f"Cosine Similarity Score: {score:.4f}\n")
+        return ranked_documents
 
 
 
@@ -133,8 +137,8 @@ def jsonl_file_to_tokens(filepath):
     
 
 
-def main():
-    data = jsonl_file_to_tokens('./data/data.jsonl')
+def main(filepath, query, flag):
+    data = jsonl_file_to_tokens(filepath)
 
     engine = tfidf_corp()
 
@@ -142,10 +146,24 @@ def main():
 
     engine.generate_tfidf()
 
-    engine.search('Ann M. Osborn and Thomas Osborn, Plaintiffs in Error, v. Jacob Horine')
+    ranked_documents = engine.search(query if query else 'illinois defendent')
 
-
+    for doc, score in ranked_documents:
+            print(f"Document: {doc}")
+            print(f"Cosine Similarity Score: {score:.4f}\n")
 
 
 if __name__ == "__main__":
-    main()
+    filepath, query, flag = None, None, None
+
+    if len(sys.argv) == 4:
+        filepath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3]
+    elif len(sys.argv) == 3 :
+        filepath, query = sys.argv[1], sys.argv[2]
+    elif len(sys.argv) == 2:
+        filepath = sys.argv[1]
+    else:
+        print('Invalid arguments : python termfreq.py [data filepath] [query] [flag]')
+        sys.exit()
+
+    main(filepath, query, flag)
