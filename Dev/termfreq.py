@@ -81,7 +81,32 @@ class tfidf_corp:
 
         return ranked_documents
 
+def ingest(data_path, schema_path):
+    corpus = []
 
+    with open(schema_path, mode='r') as schema_file:
+        schema = json.load(schema_file)
+
+    with open(data_path, mode='r') as file:
+        count = 0
+        for line in file:
+            count += 1
+            if count > 1:
+                return corpus
+
+            json_line = json.loads(line)
+
+            entry = {}
+
+            for key, val in schema.items():
+                obj = json_line
+                for elem in val:
+                    obj = obj[f'{elem}']
+                entry[key] = obj
+        
+            corpus.append(entry)
+
+    return corpus
 
 def jsonl_file_to_tokens(filepath):
     tokenized_corpus = []
@@ -138,32 +163,37 @@ def jsonl_file_to_tokens(filepath):
 
 
 def main(filepath, query, flag):
-    data = jsonl_file_to_tokens(filepath)
+    print(ingest(filepath, schemapath))
 
-    engine = tfidf_corp()
+    # data = jsonl_file_to_tokens(filepath)
 
-    engine.add_documents(data)
+    # engine = tfidf_corp()
 
-    engine.generate_tfidf()
+    # engine.add_documents(data)
 
-    ranked_documents = engine.search(query if query else 'illinois defendent')
+    # engine.generate_tfidf()
 
-    for doc, score in ranked_documents:
-            print(f"Document: {doc}")
-            print(f"Cosine Similarity Score: {score:.4f}\n")
+    # ranked_documents = engine.search(query if query else 'illinois defendent')
+
+    # for doc, score in ranked_documents:
+    #         print(f"Document: {doc}")
+    #         print(f"Cosine Similarity Score: {score:.4f}\n")
 
 
 if __name__ == "__main__":
-    filepath, query, flag = None, None, None
+    filepath, schemapath, query, flag = None, None, None, None
 
-    if len(sys.argv) == 4:
-        filepath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3]
-    elif len(sys.argv) == 3 :
-        filepath, query = sys.argv[1], sys.argv[2]
-    elif len(sys.argv) == 2:
-        filepath = sys.argv[1]
-    else:
-        print('Invalid arguments : python termfreq.py [data filepath] [query] [flag]')
-        sys.exit()
+    # if len(sys.argv) == 4:
+    #     filepath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3]
+    # elif len(sys.argv) == 3 :
+    #     filepath, query = sys.argv[1], sys.argv[2]
+    # elif len(sys.argv) == 2:
+    #     filepath = sys.argv[1]
+    # else:
+    #     print('Invalid arguments : python termfreq.py [data filepath] [query] [flag]')
+    #     sys.exit()
 
-    main(filepath, query, flag)
+    # main(filepath, query, flag)
+
+    # main(sys.argv[1], sys.argv[2], None)
+    print(ingest(sys.argv[1], sys.argv[2]))
