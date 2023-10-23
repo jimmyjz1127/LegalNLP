@@ -66,7 +66,7 @@ class tfidf_corp:
             print('No documents in corpus')
             return
 
-        self.corpus_tfidf = self.vectorizer.fit_transform([obj['body'] for obj in self.documents])
+        self.corpus_tfidf = self.vectorizer.fit_transform([obj['main'] for obj in self.documents])
 
     def search(self, query):
         '''
@@ -82,17 +82,33 @@ class tfidf_corp:
         return ranked_documents
 
 def ingest(data_path, schema_path):
+    '''
+        Ingests documents based on schmea file (rule based parsing)
+
+        {
+            name            : name of document 
+            main            : main text of document 
+            date            : date of document 
+            jurisdiction    : jurisdiction of document 
+            judges          : judges of document 
+            court           : court assocaited with document 
+            attorneys       : attorneys associated with document 
+            extra           : any extra text involved such as opinions or summaries 
+        }
+    '''
+
     corpus = []
 
+    # parse schema file 
     with open(schema_path, mode='r') as schema_file:
         schema = json.load(schema_file)
 
+    # parse data file 
     with open(data_path, mode='r') as file:
         count = 0
         for line in file:
             count += 1
-            if count > 1:
-                return corpus
+            if count > 15:return corpus
 
             json_line = json.loads(line)
 
@@ -103,97 +119,42 @@ def ingest(data_path, schema_path):
                 for elem in val:
                     obj = obj[f'{elem}']
                 entry[key] = obj
+
+            entry['id'] = entry['name'].translate(str.maketrans('', '', string.punctuation)).replace(' ', '')
         
             corpus.append(entry)
 
     return corpus
 
-def jsonl_file_to_tokens(filepath):
-    tokenized_corpus = []
-
-    with open(filepath, mode='r') as file:
-        count = 0 
-        for line in file:
-
-            count += 1
-            if count == 10:
-                return tokenized_corpus
-            
-            json_line = json.loads(line)
-
-            url = json_line['url']
-            name = json_line['name']
-            short_name = json_line['name_abbreviation']
-            date = json_line['decision_date']
-            docket = json_line['docket_number']
-            first_page = json_line['first_page']
-            last_page = json_line['last_page']
-            citations = json_line['citations']
-            volume = json_line['volume']
-            court = json_line['court'] 
-            jurisdiction = json_line['jurisdiction'] 
-
-            body = json_line['casebody']['data']['head_matter']
-            opinions = json_line['casebody']['data']['opinions'] # text, author, type
-            judges = json_line['casebody']['data']['judges'] 
 
 
-            # body_tokens = pipeline_process(body)
-            # opinions_tokens = (pipeline_process(opinions['text']) + pipeline_process(opinions['author']))
+def main(filepath, schemapath, query, flag):
+    data = ingest(filepath, schemapath)
 
-            tokenized_corpus.append({
-                'url':url,
-                'long_name':name,
-                'name':short_name,
-                'date' : date,
-                'docket' : docket,
-                'first_page' : first_page,
-                'last_page' : last_page,
-                'citations' : citations,
-                'volume':volume,
-                'court' : court,
-                'jurisdiction' : jurisdiction,
-                'body' : body,
-                'opinions' : opinions,
-                'judges' : judges,
-            })
+    engine = tfidf_corp()
 
-    return tokenized_corpus
-    
+    engine.add_documents(data)
 
+    engine.generate_tfidf()
 
-def main(filepath, query, flag):
-    print(ingest(filepath, schemapath))
+    ranked_documents = engine.search(query if query else 'illinois defendent')
 
-    # data = jsonl_file_to_tokens(filepath)
-
-    # engine = tfidf_corp()
-
-    # engine.add_documents(data)
-
-    # engine.generate_tfidf()
-
-    # ranked_documents = engine.search(query if query else 'illinois defendent')
-
-    # for doc, score in ranked_documents:
-    #         print(f"Document: {doc}")
-    #         print(f"Cosine Similarity Score: {score:.4f}\n")
+    for doc, score in ranked_documents:
+            print(f"Document: {doc}")
+            print(f"Cosine Similarity Score: {score:.4f}\n")
 
 
 if __name__ == "__main__":
     filepath, schemapath, query, flag = None, None, None, None
 
-    # if len(sys.argv) == 4:
-    #     filepath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3]
-    # elif len(sys.argv) == 3 :
-    #     filepath, query = sys.argv[1], sys.argv[2]
-    # elif len(sys.argv) == 2:
-    #     filepath = sys.argv[1]
-    # else:
-    #     print('Invalid arguments : python termfreq.py [data filepath] [query] [flag]')
-    #     sys.exit()
+    if len(sys.argv) == 5:
+        filepath, schemapath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    elif len(sys.argv) == 4:
+        filepath, schemapath, query = sys.argv[1], sys.argv[2], sys.argv[3]
+    elif len(sys.argv) == 3 :
+        filepath, schemapath = sys.argv[1], sys.argv[2]
+    else:
+        print('Invalid arguments : python termfreq.py [data filepath] [schema filepath] [query] [flag]')
+        sys.exit()
 
-    # main(filepath, query, flag)
-
-    # main(sys.argv[1], sys.argv[2], None)
-    print(ingest(sys.argv[1], sys.argv[2]))
+    main(filepath, schemapath, query, flag)
