@@ -26,13 +26,6 @@ class tfidf_corp:
     '''
         Class definition of tfidf_corp object for building TF-IDF matrix of document corpus and performing 
         cosine similarity searches.
-    
-        Document Format
-            {
-                name : String
-                date : String 
-                body : String 
-            }
     '''
 
 
@@ -86,135 +79,55 @@ class tfidf_corp:
         return ranked_documents
 
 
-    def store_data(self):
+    def store_matrix(self):
         '''
             Saves TF-IDF matrix into pickle file 
         '''
 
-        with open('tfidf.pkl', 'wb') as pickle_file:
+        with open('Embeddings/tfidf.pkl', 'wb') as pickle_file:
             pickle.dump((self.vectorizer, self.corpus_tfidf), pickle_file)
 
 
-    def load_data(self):
+    def load_matrix(self):
         ''' 
             Loads TF-IDF matrix from pickle file 
         '''
 
-        with open('tfidf.pkl', 'rb') as pickle_file:
+        with open('Embeddings/tfidf.pkl', 'rb') as pickle_file:
             self.vectorizer, self.corpus_tfidf = pickle.load(pickle_file)
 
 
-def ingest(data_path, schema_path, mode):
+def create_store_matrix_main(engine):
     '''
-        Ingests documents based on schmea file (rule based parsing)
+        Creates and stores TF-IDF matrix (to be run only after documents have been loaded into engine object)
 
-        {
-            name            : name of document 
-            main            : main text of document 
-            date            : date of document 
-            jurisdiction    : jurisdiction of document 
-            judges          : judges of document 
-            court           : court assocaited with document 
-            attorneys       : attorneys associated with document 
-            extra           : any extra text involved such as opinions or summaries 
-        }
+        Arguments:
+            engine : tfidf_corpus object
     '''
 
-    corpus = []
-
-    # parse schema file 
-    with open(schema_path, mode='r') as schema_file:
-        schema = json.load(schema_file)
-
-    # parse data file 
-    with open(data_path, mode='r') as file:
-        count = 0
-        for line in file:
-            count += 1
-            if count > 15:break
-
-            json_line = json.loads(line)
-
-            entry = {}
-
-            for key, val in schema.items():
-                obj = json_line
-                for elem in val:
-                    obj = obj[f'{elem}']
-                entry[key] = obj
-
-            entry['id'] = entry['name'].translate(str.maketrans('', '', string.punctuation)).replace(' ', '')
-        
-            corpus.append(entry)
-
-    # Save new data to files 
-    if mode == 'a': update_corpus(corpus)
-    elif mode == 'w': store_corpus(corpus)
-
-    # return corpus
-
-def store_corpus(data):
-    '''
-        WRITES json corpus data to json file 
-
-        Arguments : 
-            data : array of json objects [ {key:val} ]
-    '''
-    with open('corpus.json', 'w') as corpus_file:
-        json.dump(data, corpus_file)
-
-
-def update_corpus(data):
-    '''
-        Appends new data to existing corpus (if not already included)
-
-        Arguments : 
-            data : array of json objects [ {key:val} ]
-    '''
-
-    with open('corpus.json', 'r') as corpus_file:
-        corpus = json.load(corpus_file)
-    
-    corpus_ids = [obj['id'] for obj in corpus]
-
-    for obj in data:
-        if obj['id'] in corpus_ids: continue
-        else: corpus.append(obj)
-
-    with open(corpus.json, 'w') as corpus_file:
-        json.dump(corpus, corpus_file)
-
-
-def main1(filepath, schemapath, query, flag):
-    ingest(filepath, schemapath, 'w')
-
-    engine = tfidf_corp()
-
-    engine.load_documents()
-
+    # generate TF-IDF matrix for documents loaded 
     engine.generate_tfidf()
 
-    engine.store_data()
-
-    ranked_documents = engine.search(query if query else 'illinois defendent')
-
-    for doc, score in ranked_documents:
-            print(f"Document: {doc}")
-            print(f"Cosine Similarity Score: {score:.4f}\n")
+    # Store the TF-IDF matrix into pickle file 
+    engine.store_matrix()
 
 
-def main2(filepath, schemapath, query, flag):
-    print('test a')
-    ingest(filepath, schemapath, 'w')
+def main(query, flag):
+    '''
+        Arguments:
+            query : the query to run against corpus 
+            flag  : 1 to compute TF-IDF matrix, 0 otherwise
+    '''
 
-    print('test b')
     engine = tfidf_corp()
 
-    print('test c')
+    # load documents from corpus file 
     engine.load_documents()
 
-    print('test d')
-    engine.load_data() 
+    if flag : create_store_matrix_main(engine) 
+
+    # Load matrix from pickle file
+    engine.load_matrix() 
 
     ranked_documents = engine.search(query if query else 'illinois defendent')
 
@@ -224,16 +137,12 @@ def main2(filepath, schemapath, query, flag):
 
 
 if __name__ == "__main__":
-    filepath, schemapath, query, flag = None, None, None, None
+    query, flag = None, 0
 
-    if len(sys.argv) == 5:
-        filepath, schemapath, query, flag = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-    elif len(sys.argv) == 4:
-        filepath, schemapath, query = sys.argv[1], sys.argv[2], sys.argv[3]
-    elif len(sys.argv) == 3 :
-        filepath, schemapath = sys.argv[1], sys.argv[2]
-    else:
-        print('Invalid arguments : python termfreq.py [data filepath] [schema filepath] [query] [flag]')
-        sys.exit()
+    if (len(sys.argv) > 3):
+        print('Invalid Usage : python termfreq.py [query <optional>] [flag <optional>]')
+    elif (len(sys.argv) == 3): query,flag = sys.argv[1], sys.argv[2]
+    elif (len(sys.argv) == 2): query = sys.argv[1]
+    
+    main(query, flag)
 
-    main2(filepath, schemapath, query, flag)
