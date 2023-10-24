@@ -20,7 +20,7 @@ from nltk.stem import PorterStemmer, SnowballStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
 
-
+import pickle
 
 class tfidf_corp:
     '''
@@ -44,6 +44,10 @@ class tfidf_corp:
         self.corpus_tfidf = None
         self.documents = []
         self.stop_words = set(stopwords.words('english') + list(string.punctuation))
+
+    def load_documents(self):
+        with open('corpus.json', 'r') as corpus_file:
+            self.documents = json.load(corpus_file)
 
     def add_document(self, document):
         '''
@@ -81,7 +85,26 @@ class tfidf_corp:
 
         return ranked_documents
 
-def ingest(data_path, schema_path):
+
+    def store_data(self):
+        '''
+            Saves TF-IDF matrix into pickle file 
+        '''
+
+        with open('tfidf.pkl', 'wb') as pickle_file:
+            pickle.dump((self.vectorizer, self.corpus_tfidf), pickle_file)
+
+
+    def load_data(self):
+        ''' 
+            Loads TF-IDF matrix from pickle file 
+        '''
+
+        with open('tfidf.pkl', 'rb') as pickle_file:
+            self.vectorizer, self.corpus_tfidf = pickle.load(pickle_file)
+
+
+def ingest(data_path, schema_path, mode):
     '''
         Ingests documents based on schmea file (rule based parsing)
 
@@ -108,7 +131,7 @@ def ingest(data_path, schema_path):
         count = 0
         for line in file:
             count += 1
-            if count > 15:return corpus
+            if count > 15:break
 
             json_line = json.loads(line)
 
@@ -124,18 +147,74 @@ def ingest(data_path, schema_path):
         
             corpus.append(entry)
 
-    return corpus
+    # Save new data to files 
+    if mode == 'a': update_corpus(corpus)
+    elif mode == 'w': store_corpus(corpus)
+
+    # return corpus
+
+def store_corpus(data):
+    '''
+        WRITES json corpus data to json file 
+
+        Arguments : 
+            data : array of json objects [ {key:val} ]
+    '''
+    with open('corpus.json', 'w') as corpus_file:
+        json.dump(data, corpus_file)
 
 
+def update_corpus(data):
+    '''
+        Appends new data to existing corpus (if not already included)
 
-def main(filepath, schemapath, query, flag):
-    data = ingest(filepath, schemapath)
+        Arguments : 
+            data : array of json objects [ {key:val} ]
+    '''
+
+    with open('corpus.json', 'r') as corpus_file:
+        corpus = json.load(corpus_file)
+    
+    corpus_ids = [obj['id'] for obj in corpus]
+
+    for obj in data:
+        if obj['id'] in corpus_ids: continue
+        else: corpus.append(obj)
+
+    with open(corpus.json, 'w') as corpus_file:
+        json.dump(corpus, corpus_file)
+
+
+def main1(filepath, schemapath, query, flag):
+    ingest(filepath, schemapath, 'w')
 
     engine = tfidf_corp()
 
-    engine.add_documents(data)
+    engine.load_documents()
 
     engine.generate_tfidf()
+
+    engine.store_data()
+
+    ranked_documents = engine.search(query if query else 'illinois defendent')
+
+    for doc, score in ranked_documents:
+            print(f"Document: {doc}")
+            print(f"Cosine Similarity Score: {score:.4f}\n")
+
+
+def main2(filepath, schemapath, query, flag):
+    print('test a')
+    ingest(filepath, schemapath, 'w')
+
+    print('test b')
+    engine = tfidf_corp()
+
+    print('test c')
+    engine.load_documents()
+
+    print('test d')
+    engine.load_data() 
 
     ranked_documents = engine.search(query if query else 'illinois defendent')
 
@@ -157,4 +236,4 @@ if __name__ == "__main__":
         print('Invalid arguments : python termfreq.py [data filepath] [schema filepath] [query] [flag]')
         sys.exit()
 
-    main(filepath, schemapath, query, flag)
+    main2(filepath, schemapath, query, flag)
