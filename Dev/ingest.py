@@ -44,6 +44,8 @@ def ingest(data_path, schema_path, mode):
                 obj = json_line
                 for elem in val:
                     obj = obj[f'{elem}']
+
+                if not obj['name'] or not obj['main']:continue # if missing name or main field, skip
                 entry[key] = obj
 
             entry['id'] = entry['name'].translate(str.maketrans('', '', string.punctuation)).replace(' ', '')

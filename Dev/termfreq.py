@@ -45,12 +45,18 @@ class tfidf_corp:
     def add_document(self, document):
         '''
             Appends a single document objects to documents list class-attribute 
+
+            Arguments:
+                document : document json object (main, name, ..., extra)
         '''
         self.documents.append(document)
 
     def add_documents(self, documents):
         '''
             Appends list of documents to documents list class-attribute 
+
+            Arguments:
+                documents : list of document json objects [{main, name, ..., extra}]
         '''
         self.documents = self.documents + documents
     
@@ -94,7 +100,7 @@ class tfidf_corp:
         '''
 
         with open('Embeddings/tfidf.pkl', 'rb') as pickle_file:
-            self.vectorizer, self.corpus_tfidf = pickle.load(pickle_file)
+            self.vectorizer, self.corpus_tfidf = pickle.load(pickle_file) # need to save both vectorizer object and matrix to file
 
 
 def create_store_matrix_main(engine):

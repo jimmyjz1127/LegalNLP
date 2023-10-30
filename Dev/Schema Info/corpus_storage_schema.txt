@@ -1,0 +1,64 @@
+1. Using indices 
+    [
+        0 : {
+            name : <content>,
+            main : <content>,
+            date : <content>,
+            jurisdiction : <content>,
+            judges : <content>,
+            court : <content>,
+            attorneys : <content>,
+            extra : <content>
+        }, 
+        1 : {
+            name : <content>,
+            main : <content>,
+            date : <content>,
+            jurisdiction : <content>,
+            judges : <content>,
+            court : <content>,
+            attorneys : <content>,
+            extra : <content>
+        }
+    ]
+
+2. Implicit indices
+
+    [
+        {
+            name : <content>,
+            main : <content>,
+            date : <content>,
+            jurisdiction : <content>,
+            judges : <content>,
+            court : <content>,
+            attorneys : <content>,
+            extra : <content>
+        }, 
+        {
+            name : <content>,
+            main : <content>,
+            date : <content>,
+            jurisdiction : <content>,
+            judges : <content>,
+            court : <content>,
+            attorneys : <content>,
+            extra : <content>
+        }, 
+    ]
+
+
+3. Using IDs 
+    {
+        <id> : {
+            name : <content>,
+            main : <content>,
+            date : <content>,
+            jurisdiction : <content>,
+            judges : <content>,
+            court : <content>,
+            attorneys : <content>,
+            extra : <content>
+        }
+    }
+
