@@ -20,7 +20,8 @@ class model:
 
 
     def __init__(self):
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        # self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         self.documents = []
         self.embeddings = None
     
@@ -58,7 +59,7 @@ class model:
         top_10 = torch.topk(relevance_scores, k=5)
 
         for score, idx in zip(top_10[0], top_10[1]):
-            print(self.documents[idx]['name'], "(Score: {:.4f})".format(score))
+            print(self.documents[idx]['name'], "(Score: {:.4f})".format(score)) 
 
 
     def store_embeddings(self):
@@ -85,15 +86,19 @@ def main(query, filepath, flag):
 
     engine.load_documents(filepath)
 
-    engine.generate_embeddings()
+    if flag:
+        engine.generate_embeddings()
+    else:
+        engine.load_embeddings()
 
     engine.search(query)
 
 if __name__ == '__main__':
     '''
         Arguments
-            0 : query 
-            1 : path to documents 
+            1 : query 
+            2 : path to documents 
+            3 : flag (recompute embeddings or use embeddings from file)
     '''
     query, filepath, flag = None, None, 0
 
