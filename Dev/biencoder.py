@@ -17,7 +17,7 @@ import pickle
 
 from ingest import *
 
-class model:
+class biencoder:
 
 
     def __init__(self):
@@ -87,14 +87,14 @@ class model:
         '''
             Performs cosine similarity between query and all documents 
         '''
-        query_embedding = self.model.encode(query, convert_to_tensor = True)
+        query_embedding = self.model.encode(query, show_progress_bar=True, convert_to_tensor = True)
 
         relevance_scores = util.cos_sim(query_embedding, self.embeddings)[0]
 
         top_10 = torch.topk(relevance_scores, k=5)
 
         for score, idx in zip(top_10[0], top_10[1]):
-            print(self.documents[idx]['name'], "(Score: {:.4f})".format(score)) 
+            print("{:.8f}".format(score), self.documents[idx]['name'])
 
 
     def store_embeddings(self, path):
@@ -127,7 +127,7 @@ def generate_and_store_embeddings(corpus_path, embedding_path):
     '''
     print('Generating embeddings...')
 
-    engine = model()
+    engine = biencoder()
 
     engine.load_documents(corpus_path)
 
@@ -149,7 +149,7 @@ def generate_and_append_embeddings(corpus_path, append_path, embedding_path):
 
     print('Generating embeddings...')
 
-    engine = model()
+    engine = biencoder()
 
     engine.load_embeddings(embedding_path)
 
@@ -166,7 +166,7 @@ def query(query, embedding_path, corpus_path):
             corpus_path : path to document corpus file (json)
     '''
 
-    engine = model()
+    engine = biencoder()
 
     engine.load_documents(corpus_path)
 
