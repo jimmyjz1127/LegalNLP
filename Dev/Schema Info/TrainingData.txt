@@ -1,17 +1,20 @@
 Ingested Format 
     [
         {
-            "query",
-            "text",
-            "label" 
+            "query"             : required, // the primary query text 
+            "text",             : requried, // the document itself
+            "label",            : required, // 1 or 0 
+            "secondary_query",  : optional, // e.g title or anything else that could be a query
+            "topic_label"       : optional, // label for topic modelling 
         }
     ]
 
 r_legaladvice:
     Format: 
         {
-            "body" : body of post,      // document 
-            "title" : title of post,    // for IR training (query) 
+            "id"         : identification 
+            "body"       : body of post,      // document 
+            "title"      : title of post,    // for IR training (query) 
             "text_label" : topic label  // for topic modelling
         }
     
