@@ -115,6 +115,14 @@ class biencoder:
         with open(path, 'rb') as pickle_file:
             self.embeddings = pickle.load(pickle_file)
 
+    def train(self, path):
+        '''
+            For training model with a given dataset 
+
+            Arguments:
+                path : path to file containing training data 
+        '''
+
  
 
 def generate_and_store_embeddings(corpus_path, embedding_path):
