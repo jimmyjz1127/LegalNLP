@@ -1,1 +1,5 @@
 Dev/data/*
+Notebooks/raw_data/*
+Notebooks/processed_data/*
+Notebooks/models/*
+Notebooks/tokenizer/*
