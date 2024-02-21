@@ -7,3 +7,4 @@ Notebooks/models/*
 Notebooks/tokenizer/*
 pytorchenv
 Notebooks/casehold_state.pth
+src/client/node_modules

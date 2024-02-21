@@ -6,16 +6,10 @@ import string
 import random
 import time
 import datetime
-import copy
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 
-from argparse import Namespace
-from tqdm import tqdm
-from datasets import Dataset
 
 import transformers
 from transformers import BertTokenizer, BertModel, pipeline
@@ -37,8 +31,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer, SnowballStemmer
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
+from flask_cors import CORS  # Import CORS
+from flask_cors import cross_origin
 import time
 
 import pickle
@@ -133,8 +128,10 @@ class tfidf_corp:
 class SearchEngine():
     def __init__(self, model_path, corpus_path):
         self.df = pd.read_json(corpus_path)
+
         self.tf_idf = tfidf_corp(corpus_path)
         self.tf_idf.set_documents(self.df)
+        self.tf_idf.generate_tfidf()
 
         self.model = transformers.BertModel.from_pretrained(model_path)
         self.tokenizer = transformers.BertTokenizer.from_pretrained('casehold/legalbert')
@@ -146,7 +143,7 @@ class SearchEngine():
         self.model.to(self.device)
 
     def search(self, query):
-        top_k_tfidf = self.tf_idf.search(query, 50)
+        top_k_tfidf = self.tf_idf.search(query, 10)
 
         df_rows = [row for row,_ in top_k_tfidf]
 
@@ -160,7 +157,7 @@ class SearchEngine():
 
         similarity_scores = []
 
-        for main_text in dataframe['main']:
+        for main_text in dataframe['name']:
 
             # Tokenize and encode the text for the model input
             text_tokens = self.tokenizer(main_text, return_tensors='pt', padding=True, truncation=True, max_length=512)
@@ -189,7 +186,9 @@ class SearchEngine():
 class FlaskServer:
     def __init__(self):
         self.app = Flask(__name__)
+        CORS(self.app, supports_credentials=True, origins="http://localhost:3000", allow_headers=["Content-Type"])
         self.setup_routes()
+        self.engine = SearchEngine('./../../Notebooks/models/mlm_model_manual', './../../Dev/corpus.json')
 
     def setup_routes(self):
         @self.app.route('/', methods=['GET'])
@@ -204,6 +203,15 @@ class FlaskServer:
                 'data_received': data
             }
             return jsonify(response)
+
+        @self.app.route('/search', methods=['POST'])
+        def search():
+            data = request.json
+
+            results = self.engine.search(data['query']).to_json(orient='records')
+
+    
+            return jsonify(isError=False, message="Success", statusCode=200, data=results), 200
 
     def run(self, debug=True):
         self.app.run(debug=debug)

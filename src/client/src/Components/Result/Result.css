@@ -1,0 +1,19 @@
+.result-wrapper{
+    box-sizing:border-box;
+    height:20px;
+    width:100%;
+    background-color: white;
+
+    margin-top:10px;
+    padding :20px 15px 20px 15px;
+
+    border-top:1px solid black;
+}
+
+.result {
+    width:100%;
+}
+
+.result-name {
+    margin-left:5px;
+}

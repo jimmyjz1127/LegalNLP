@@ -1,0 +1,90 @@
+#home-wrapper{
+    height:100vh;
+    width:100vw;
+    background-color: var(--secondary-color);
+}
+
+
+#search-bar-modal{
+    width:fit-content;
+    /* height:10%; */
+
+    background-color: white;
+    border-radius: var(--default-radius);
+    padding:20px 10px 20px 10px;
+}
+
+#search-bar-input {
+    padding:10px 10px 10px 10px;
+    border-radius: var(--default-radius);
+
+    min-width:450px;
+    background-color: var(--secondary-color);
+    text-decoration: none;
+    border: none;
+    margin-right:5px;
+
+    font-size:1em;
+}
+
+#search-btn{
+    padding:10px 50px 10px 50px;
+    border-radius: var(--default-radius);
+
+    background-color: blue;
+    color:white;
+    font-weight: 600;
+    font-size:1em;
+    border: none;
+}
+
+#results-wrapper{
+    margin-top:20px;
+    min-width:50%;
+    background-color:white;
+
+    border-radius:var(--default-radius);
+}
+
+#results-top-bar{
+    box-sizing:border-box;
+    width:100%;
+    padding:10px;
+    border-bottom:1px solid black;
+}
+
+#results-main {
+    box-sizing:border-box;
+    max-width:100%;
+    /* min-height: 20px; */
+
+    overflow: scroll;
+    min-height:500px;
+}
+
+#results-bottom-bar {
+    box-sizing:border-box;
+    width:100%;
+    padding:10px;
+    border-top:1px solid black;
+}
+
+#download-btn{
+    background-color: blue;
+    color:white;
+    font-weight: 600;
+    padding:10px 30px 10px 30px;
+}
+
+#result-num{
+    border-radius: 45%;
+    background-color: rgb(117, 117, 117);
+    color:white;
+    padding:5px;
+
+    margin-left:2px;
+}
+
+/* license law  */
+/* illinois defendent  */
+/* railroad river company  */

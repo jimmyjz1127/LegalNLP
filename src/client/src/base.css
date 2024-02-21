@@ -1,0 +1,47 @@
+* {
+    --default-radius : 0.75em;
+    --secondary-color : rgb(207, 207, 207);
+}
+
+.flex {
+    display:flex
+}
+
+.col {
+    flex-direction:column;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-evenly {
+    justify-content: space-evenly;
+}
+
+
+.align-center {
+    align-items: center;
+}
+
+.align-start {
+    align-items: flex-start;
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.default-btn{
+    border-radius: var(--default-radius);
+    border:none;
+    padding:10px 15px 10px 15px;
+}
