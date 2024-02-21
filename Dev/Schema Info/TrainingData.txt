@@ -1,0 +1,66 @@
+Ingested Format 
+    [
+        {
+            "query"             : required, // the primary query text 
+            "text",             : requried, // the document itself
+            "label",            : required, // 1 or 0 
+            "secondary_query",  : optional, // e.g title or anything else that could be a query
+            "topic_label"       : optional, // label for topic modelling 
+        }
+    ]
+
+r_legaladvice:
+    Format: 
+        {
+            "id"         : identification 
+            "body"       : body of post,      // document 
+            "title"      : title of post,    // for IR training (query) 
+            "text_label" : topic label  // for topic modelling
+        }
+    
+    Example:
+        {
+            "body": "In Maine, my landlord (commercial property management company) updated their snow removal policy just prior to a rather large storm. The policy states that between x:xx time cars cannot be parked in certain lots and between x:xx time cars cannot be parked in other certain lots due to snow removal from all the parking lots. \n\nAfter the storm my wife, who works from home some days, was not available to move her car during these very specific times for plowing. When she was able to get outside and move her car she was advised by representatives of the property management company that she gets a pass this time but next time they will fine us $50 if they have to text us to remind us to move our car and $100 if the car isn\u2019t moved in what they called a \u201creasonable timeframe\u201d. \n\nNowhere in my signed lease does it mention anything about moving cars for snow removal or reference any policies regarding snow removal or fines. They posted the policy well after our signed lease and did not request any confirmation of receiving the policy or signature stating that we agree to the policy.",
+            "title": "Landlord is updating snow removal policies and imposing fines",
+            "text_label": "housing"
+        }
+
+eu2uk_sum_cases
+    Format:
+        Each file contains raw text 
+
+    judgement:
+        Contains original documents 
+        Use as documents to retrieve
+
+    Summary: 
+        contains summaries for "judgement" documents 
+        Use as query 
+
+eu2uk_ir_legislation
+    corpus format:
+        {
+            "document_id",
+            "publication_year",
+            "text"
+        }
+
+    data format:
+        {
+            "document_id" : EU legislation id 
+            "publication_year",
+            "text" : text of EU legislation 
+            "relevant_documents" : [ids of corresponding UK legislation]
+        }
+
+
+aus_sum_cases
+    Format:
+        {
+            "bill_id",
+            "text" : the original document text to summarize 
+            "summary" : the summary of the bill ("text"),
+            "title" : the title of the bill,
+            "text_len" : length of the text,
+            "sum_len" : length of the summary
+        }
