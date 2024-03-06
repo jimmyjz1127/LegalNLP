@@ -81,6 +81,64 @@ class tfidf_corp:
                 documents : list of document json objects [{main, name, ..., extra}]
         '''
         self.documents = self.documents + documents
+
+    def breakdown_documents(self):
+        ''' 
+         {
+            name            : name of document 
+            main            : main text of document 
+            date            : date of document 
+            jurisdiction    : jurisdiction of document 
+            judges          : judges of document 
+            court           : court assocaited with document 
+            attorneys       : attorneys associated with document 
+            extra           : any extra text involved such as opinions or summaries 
+        }
+        '''
+        keys = ['name', 'date','jurisdiction','judges','court','attorneys','extra']
+
+        new_documents = [] 
+
+        for document in self.documents:
+            if len(document['main']) > 1024:
+                sections = self.breakdown_document(document)
+
+                for section in sections:
+                    obj = {} 
+                    obj['main'] = section
+                    for key in keys:
+                        obj[key] = document[key]
+                    new_documents.append(obj)
+            else:
+                new_documents.append(document)
+
+        self.documents = new_documents
+                    
+
+
+    def breakdown_document(self, document, max_length=1024, stride = 128):
+        def find_split_index(s, start):
+            end = min(start + max_length, len(s))
+
+            if end == len(s): return len(s)
+
+            split_index = s.rfind(' ', start, end)
+            return split_index if split_index != -1 else end
+
+        sections = []
+        start = 0
+        while start < len(document):
+            split_index = find_split_index(document, start)
+            sections.append(document[start:split_index].strip())
+            # start = split_index + 1 if split_index < len(paragraph) else len(paragraph)
+
+            if start + stride >= len(document) or split_index >= len(document): break
+
+            next_start = document.rfind(' ', start, start+stride)
+
+            start = next_start + 1 if next_start != -1 else len(document)
+
+        return sections
     
     def generate_tfidf(self):
         '''
