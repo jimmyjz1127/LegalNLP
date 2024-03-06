@@ -10,6 +10,7 @@ import datetime
 import numpy as np
 import pandas as pd
 
+from pprint import pprint
 
 import transformers
 from transformers import BertTokenizer, BertModel, pipeline
@@ -58,7 +59,7 @@ class tfidf_corp:
         self.datapath = datapath
 
     def set_documents(self, df):
-        # self.documents = df
+        self.corpus = df
         self.breakdown_documents(df)
 
     def load_documents(self):
@@ -171,9 +172,14 @@ class tfidf_corp:
         # Iterate over documents and their similarities
         for i, score in sorted(enumerate(similarities), key=lambda x: x[1], reverse=True):
             if score > 0:
-                doc = self.documents.loc[i]
+                doc = self.documents.loc[i].copy()
                 # Check if the document's name is unique
                 if doc['name'] not in added_names:
+                    name = doc['name']
+                    og_main = self.corpus.loc[self.corpus['name'] == name, 'main'].iloc[0]
+                    
+                    # Since 'doc' is a copy for reading, you can modify it before appending
+                    doc['main'] = og_main
                     unique_ranked_documents.append((doc, score))
                     added_names.add(doc['name'])
             

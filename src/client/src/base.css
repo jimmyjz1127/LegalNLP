@@ -45,3 +45,17 @@
     border:none;
     padding:10px 15px 10px 15px;
 }
+
+button:hover{
+    cursor: pointer;
+}
+
+button:active{
+    transform: scale(0.9);
+}
+
+.highlight{
+    background-color: var(--secondary-color);
+    border-radius: var(--default-radius);
+    padding:3px;
+}
