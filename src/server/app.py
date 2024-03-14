@@ -10,6 +10,7 @@ import datetime
 import numpy as np
 import pandas as pd
 
+from pprint import pprint
 
 import transformers
 from transformers import BertTokenizer, BertModel, pipeline
@@ -58,7 +59,8 @@ class tfidf_corp:
         self.datapath = datapath
 
     def set_documents(self, df):
-        self.documents = df
+        self.corpus = df
+        self.breakdown_documents(df)
 
     def load_documents(self):
         with open(self.datapath, 'r') as corpus_file:
@@ -82,7 +84,7 @@ class tfidf_corp:
         '''
         self.documents = self.documents + documents
 
-    def breakdown_documents(self):
+    def breakdown_documents(self, documents):
         ''' 
          {
             name            : name of document 
@@ -95,13 +97,14 @@ class tfidf_corp:
             extra           : any extra text involved such as opinions or summaries 
         }
         '''
-        keys = ['name', 'date','jurisdiction','judges','court','attorneys','extra']
+        keys = ['name', 'date','court','attorneys','extra']
 
         new_documents = [] 
 
-        for document in self.documents:
+        for index, document in documents.iterrows():
+
             if len(document['main']) > 1024:
-                sections = self.breakdown_document(document)
+                sections = self.breakdown_document(document['main'])
 
                 for section in sections:
                     obj = {} 
@@ -112,7 +115,7 @@ class tfidf_corp:
             else:
                 new_documents.append(document)
 
-        self.documents = new_documents
+        self.documents = pd.DataFrame(new_documents)
                     
 
 
@@ -156,13 +159,35 @@ class tfidf_corp:
             Performs cosine similarity search for query against document corpus 
         '''
 
+        # Generate the query vector
         query_vector = self.vectorizer.transform([query])
+        # Calculate cosine similarities between the query and the corpus
         similarities = linear_kernel(query_vector, self.corpus_tfidf).flatten()
-
-        ranked_documents = [(self.documents.loc[i], score) for i, score in enumerate(similarities) if score > 0]
-        ranked_documents.sort(key=lambda x: x[1], reverse=True)
-
-        return ranked_documents[0:k]
+        
+        # Initialize an empty list for storing unique ranked documents
+        unique_ranked_documents = []
+        # Keep track of names that have been added
+        added_names = set()
+        
+        # Iterate over documents and their similarities
+        for i, score in sorted(enumerate(similarities), key=lambda x: x[1], reverse=True):
+            if score > 0:
+                doc = self.documents.loc[i].copy()
+                # Check if the document's name is unique
+                if doc['name'] not in added_names:
+                    name = doc['name']
+                    og_main = self.corpus.loc[self.corpus['name'] == name, 'main'].iloc[0]
+                    
+                    # Since 'doc' is a copy for reading, you can modify it before appending
+                    doc['main'] = og_main
+                    unique_ranked_documents.append((doc, score))
+                    added_names.add(doc['name'])
+            
+            # Break the loop if we've collected enough unique results
+            if len(unique_ranked_documents) == k:
+                break
+                
+        return unique_ranked_documents
 
 
     def store_matrix(self, path):
@@ -215,7 +240,7 @@ class SearchEngine():
 
         similarity_scores = []
 
-        for main_text in dataframe['name']:
+        for main_text in dataframe['main']:
 
             # Tokenize and encode the text for the model input
             text_tokens = self.tokenizer(main_text, return_tensors='pt', padding=True, truncation=True, max_length=512)

@@ -9,6 +9,8 @@
     width:fit-content;
     /* height:10%; */
 
+    margin-top:10vh;
+
     background-color: white;
     border-radius: var(--default-radius);
     padding:20px 10px 20px 10px;
@@ -39,10 +41,12 @@
 }
 
 #results-wrapper{
-    margin-top:20px;
-    min-width:50%;
-    background-color:white;
+    box-sizing: border-box;
 
+    margin-top:20px;
+    max-width:75%;
+    background-color:white;
+    height:70%;
     border-radius:var(--default-radius);
 }
 
@@ -51,20 +55,21 @@
     width:100%;
     padding:10px;
     border-bottom:1px solid black;
+    height:10%;
 }
 
 #results-main {
     box-sizing:border-box;
     max-width:100%;
-    /* min-height: 20px; */
 
     overflow: scroll;
-    min-height:500px;
+    height:80%;
 }
 
 #results-bottom-bar {
     box-sizing:border-box;
     width:100%;
+    height:10%;
     padding:10px;
     border-top:1px solid black;
 }
@@ -85,6 +90,11 @@
     margin-left:2px;
 }
 
-/* license law  */
-/* illinois defendent  */
-/* railroad river company  */
+#loader-wrapper{
+    width:100%;
+    height:300px !important;
+}
+
+#result-loader{
+    width:15%;
+}

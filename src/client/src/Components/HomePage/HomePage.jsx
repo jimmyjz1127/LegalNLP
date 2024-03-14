@@ -7,6 +7,8 @@ import Axios from 'axios';
 import Navbar from './../Navbar/Navbar'
 import Result from './../Result/Result'
 
+import LoadingIcon from './../../Assets/loading.gif'
+
 import "./HomePage.css"
 
 function HomePage(props){
@@ -14,8 +16,10 @@ function HomePage(props){
     const [results, setResults] = useState([]);
     const [numResults, setNumResults] = useState(0);
     const [query, setQuery] = useState("");
+    const [loading, setLoading] = useState(0)
 
     const searchQuery = async () => {
+        setLoading(1)
         try {
             const res = await Axios({
                 method:'POST',
@@ -27,10 +31,13 @@ function HomePage(props){
             })
 
             const data = JSON.parse(res.data.data)
+            console.log(data)
             setResults(data)
             setNumResults(data.length)
+            setLoading(0)
         } catch (err) {
             console.log(err)
+            setLoading(0)
         }
     }
 
@@ -48,13 +55,20 @@ function HomePage(props){
                 </div>
 
                 <div id="results-main" className="flex col align-start">
-                    {
+                    {loading ?
+                        <div id='loader-wrapper' class="flex col align-center justify-center">
+                            <img src={LoadingIcon} id='result-loader'/>
+                            <h2>Loading...</h2>
+                        </div>:
+                        
                         results.map((result, index) => {
                             return (
-                                <Result data={result} index={index}/>
+                                <Result data={result} index={index} key={index}/>
                             );
                         })
+                        
                     }
+                    
                 </div>
 
                 <div id='results-bottom-bar' className="flex row align-center">
