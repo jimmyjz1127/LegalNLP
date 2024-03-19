@@ -216,7 +216,8 @@ class SearchEngine():
         self.tf_idf.set_documents(self.df)
         self.tf_idf.generate_tfidf()
 
-        self.model = transformers.BertModel.from_pretrained(model_path)
+        # self.model = transformers.BertModel.from_pretrained(model_path, output_attentions=True)
+        self.model = transformers.BertForSequenceClassification.from_pretrained(model_path, output_attentions=True)
         self.tokenizer = transformers.BertTokenizer.from_pretrained('casehold/legalbert')
 
         self.device = 'cpu'
@@ -225,7 +226,7 @@ class SearchEngine():
 
         self.model.to(self.device)
 
-    def search(self, query):
+    def bi_search(self, query):
         top_k_tfidf = self.tf_idf.search(query, 10)
 
         df_rows = [row for row,_ in top_k_tfidf]
@@ -236,7 +237,10 @@ class SearchEngine():
         query_tokens = {key: value.to(self.device) for key, value in query_tokens.items()}
         
         with torch.no_grad():
-            query_embedding = self.model(**query_tokens).last_hidden_state.mean(dim=1)
+            # query_embedding = self.model(**query_tokens).last_hidden_state.mean(dim=1)
+            query_output = self.model(**query_tokens)
+            query_embedding = query_output.last_hidden_state.mean(dim=1)
+            query_attention = query_output.attentions
 
         similarity_scores = []
 
@@ -248,21 +252,73 @@ class SearchEngine():
             
             # Get text embedding
             with torch.no_grad():
-                text_embedding = self.model(**text_tokens).last_hidden_state.mean(dim=1)
+                # text_embedding = self.model(**text_tokens).last_hidden_state.mean(dim=1)
+                main_output = self.model(**text_tokens)
+                text_embedding = main_output.last_hidden_state.mean(dim=1)
             
             # Compute cosine similarity and append to list
             similarity = cosine_similarity(query_embedding.cpu().numpy(), text_embedding.cpu().numpy())[0][0]
             similarity_scores.append(similarity)
 
+        query_attention = [t.tolist() for t in query_attention]
+
         # Add similarity scores to the dataframe
-        dataframe['similarity'] = similarity_scores
+        dataframe['similarity'] = similarity_scores 
         
         # Sort the dataframe by similarity scores in descending order
         sorted_dataframe = dataframe.sort_values(by='similarity', ascending=False)
         
-        # Optionally, you might want to drop the similarity column before returning
-        # sorted_dataframe.drop(columns=['similarity'], inplace=True)
+        return sorted_dataframe
+
+
+    def cross_search(self, query):
+        top_k_tfidf = self.tf_idf.search(query, 10)
+        df_rows = [row for row, _ in top_k_tfidf]
+        dataframe = pd.concat(df_rows, axis=1).transpose()
         
+        # Initialize a list to hold the attention data for each query-document pair
+        query_attention_list = []
+        similarity_scores = []
+        query_tokens = []
+
+        for main_text in dataframe['main']:
+            # Combine the query and main_text into a single sequence
+            combined_input = query + " [SEP] " + main_text
+            
+            # Tokenize combined input
+            tokens = self.tokenizer(combined_input, return_tensors='pt', padding=True, truncation=True, max_length=512)
+            tokens = {key: value.to(self.device) for key, value in tokens.items()}
+            
+            with torch.no_grad():
+                # Ensure the model outputs attention weights
+                model_output = self.model(**tokens, output_attentions=True)
+                attention_weights = model_output.attentions  # This will be a tuple of tensors
+
+                logits = model_output.logits
+                score = torch.nn.functional.softmax(logits, dim=1)[:,1].item()
+                similarity_scores.append(score)
+           
+            q_tokens = self.tokenizer.tokenize(query)
+            query_tokens.append(json.dumps(q_tokens))
+            # Determine the range of token indices for the query
+            query_token_length = len(q_tokens)
+            # Adjust indices for any special tokens (e.g., [CLS] at the start)
+            start_index = 1  # Assuming [CLS] is the first token
+            end_index = start_index + query_token_length
+            
+            # Extract attention weights for the query tokens from the last layer 
+            query_attention = attention_weights[-1][0, :, start_index:end_index, start_index:end_index].mean(dim=0)
+            query_attention_list.append(query_attention.tolist())
+            
+        # Add similarity scores to the dataframe
+        dataframe['similarity'] = similarity_scores 
+        dataframe['attention'] = query_attention_list
+        dataframe['attention'] = dataframe['attention'].apply(lambda x: json.dumps(x))
+        dataframe['query_tokens'] = query_tokens
+        
+        # Sort the dataframe by similarity scores in descending order
+        sorted_dataframe = dataframe.sort_values(by='similarity', ascending=False)
+
         return sorted_dataframe
     
 
@@ -291,7 +347,7 @@ class FlaskServer:
         def search():
             data = request.json
 
-            results = self.engine.search(data['query']).to_json(orient='records')
+            results= self.engine.cross_search(data['query']).to_json(orient='records')
 
     
             return jsonify(isError=False, message="Success", statusCode=200, data=results), 200

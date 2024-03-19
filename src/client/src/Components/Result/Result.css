@@ -17,7 +17,7 @@
     height:fit-content;
 
     display:grid;
-    grid-template-columns: 1fr 10fr 1fr;
+    grid-template-columns: 1fr 10fr 2fr;
     gap:10px;
 }
 
@@ -58,6 +58,10 @@
 
     border:none;
     background-color: transparent;
-    text-decoration: underline;
+    /* text-decoration: underline; */
     font-weight: 600;
+}
+
+button>img{
+    width:12px;
 }
