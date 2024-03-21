@@ -48,7 +48,7 @@ class tfidf_corp:
     '''
 
 
-    def __init__(self, datapath):
+    def __init__(self, datapath, flag):
         '''
             Constructor : initializes vectorizer object, corpus TF-IDF matrix, empty document list, and stopword list
         '''
@@ -97,11 +97,12 @@ class tfidf_corp:
             extra           : any extra text involved such as opinions or summaries 
         }
         '''
-        keys = ['name', 'date','court','attorneys','extra']
+        keys = ['name','court']
 
         new_documents = [] 
 
         for index, document in documents.iterrows():
+            if type(document['main']) == type(1.5): continue
 
             if len(document['main']) > 1024:
                 sections = self.breakdown_document(document['main'])
@@ -154,6 +155,8 @@ class tfidf_corp:
 
         self.corpus_tfidf = self.vectorizer.fit_transform([obj['main'] for idx,obj in self.documents.iterrows()])
 
+        self.store_matrix(None)
+
     def search(self, query, k):
         '''
             Performs cosine similarity search for query against document corpus 
@@ -163,7 +166,6 @@ class tfidf_corp:
         query_vector = self.vectorizer.transform([query])
         # Calculate cosine similarities between the query and the corpus
         similarities = linear_kernel(query_vector, self.corpus_tfidf).flatten()
-        
         # Initialize an empty list for storing unique ranked documents
         unique_ranked_documents = []
         # Keep track of names that have been added
@@ -195,7 +197,7 @@ class tfidf_corp:
             Saves TF-IDF matrix into pickle file 
         '''
 
-        with open(path, 'wb') as pickle_file:
+        with open('Embeddings/tfidf.pkl', 'wb') as pickle_file:
             pickle.dump((self.vectorizer, self.corpus_tfidf), pickle_file)
 
 
@@ -209,12 +211,17 @@ class tfidf_corp:
 
 
 class SearchEngine():
-    def __init__(self, model_path, corpus_path):
-        self.df = pd.read_json(corpus_path)
+    def __init__(self, model_path, corpus_path, flag):
+        self.df = pd.read_csv(corpus_path)
 
-        self.tf_idf = tfidf_corp(corpus_path)
+        self.tf_idf = tfidf_corp(corpus_path, flag)
         self.tf_idf.set_documents(self.df)
-        self.tf_idf.generate_tfidf()
+
+        if flag == 'True':
+            self.tf_idf.load_matrix(None)
+        else :
+            
+            self.tf_idf.generate_tfidf()
 
         # self.model = transformers.BertModel.from_pretrained(model_path, output_attentions=True)
         self.model = transformers.BertForSequenceClassification.from_pretrained(model_path, output_attentions=True)
@@ -272,7 +279,7 @@ class SearchEngine():
 
 
     def cross_search(self, query):
-        top_k_tfidf = self.tf_idf.search(query, 10)
+        top_k_tfidf = self.tf_idf.search(query, 20)
         df_rows = [row for row, _ in top_k_tfidf]
         dataframe = pd.concat(df_rows, axis=1).transpose()
         
@@ -280,6 +287,7 @@ class SearchEngine():
         query_attention_list = []
         similarity_scores = []
         query_tokens = []
+        document_top_tokens_list = []
 
         for main_text in dataframe['main']:
             # Combine the query and main_text into a single sequence
@@ -309,25 +317,44 @@ class SearchEngine():
             # Extract attention weights for the query tokens from the last layer 
             query_attention = attention_weights[-1][0, :, start_index:end_index, start_index:end_index].mean(dim=0)
             query_attention_list.append(query_attention.tolist())
+
+            # Determine top 10 document tokens based on attention weight 
+            m_tokens = self.tokenizer.tokenize(main_text) 
+            start_index_m = end_index + 1  # Assuming [SEP] token between query and document
+            end_index_m = start_index_m + len(m_tokens)
+
+
+            document_attention = attention_weights[-1][0, :, start_index_m:end_index_m, start_index_m:end_index_m].mean(dim=0)
+            top_attentions, top_indices = torch.topk(document_attention, 10)  # Get top 10 attentions and their indices
+            # Ensure top_indices and top_attentions are properly flattened
+            top_indices_flat = top_indices.cpu().numpy().flatten()
+            top_attentions_flat = top_attentions.cpu().numpy().flatten()
+
+            # Assuming top_indices_flat and top_attentions_flat are defined as before
+            top_tokens_with_weights = {m_tokens[idx]: float(attention) for idx, attention in zip(top_indices_flat, top_attentions_flat)}
+            
+            document_top_tokens_list.append(json.dumps(top_tokens_with_weights))
+
             
         # Add similarity scores to the dataframe
         dataframe['similarity'] = similarity_scores 
         dataframe['attention'] = query_attention_list
         dataframe['attention'] = dataframe['attention'].apply(lambda x: json.dumps(x))
         dataframe['query_tokens'] = query_tokens
+        dataframe['document_top_tokens'] = document_top_tokens_list
         
         # Sort the dataframe by similarity scores in descending order
         sorted_dataframe = dataframe.sort_values(by='similarity', ascending=False)
 
         return sorted_dataframe
-    
+
 
 class FlaskServer:
-    def __init__(self):
+    def __init__(self, flag):
         self.app = Flask(__name__)
         CORS(self.app, supports_credentials=True, origins="http://localhost:3000", allow_headers=["Content-Type"])
         self.setup_routes()
-        self.engine = SearchEngine('./../../Notebooks/models/mlm_model_manual', './../../Dev/corpus.json')
+        self.engine = SearchEngine('./../../Notebooks/models/mlm_model_manual', 'corpus.csv', flag)
 
     def setup_routes(self):
         @self.app.route('/', methods=['GET'])
@@ -358,5 +385,10 @@ class FlaskServer:
 
 
 if __name__ == '__main__':
-    server = FlaskServer()
+    args = sys.argv[1:]
+
+    flag = args[0]
+
+
+    server = FlaskServer(flag)
     server.run()

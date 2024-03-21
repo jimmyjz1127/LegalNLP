@@ -8,3 +8,5 @@ Notebooks/tokenizer/*
 pytorchenv
 Notebooks/casehold_state.pth
 src/client/node_modules
+src/server/corpus.csv
+src/server/Embeddings/*
