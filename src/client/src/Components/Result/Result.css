@@ -65,3 +65,11 @@
 button>img{
     width:12px;
 }
+
+
+.insight-box{
+    margin-top:20px;
+    border-top:2px solid black;
+    padding:5px;
+    width:100%;
+}

@@ -7,32 +7,35 @@ const AttentionVisual = (props) => {
 
 	// Assuming `attentionData` is a 2D array passed in as props to this component
 	return (
-		<Plot
-			data={[
-				{
-					z: attentionData,
-					type: 'heatmap',
-					colorscale: 'Viridis',
-				}
-			]}
-			layout={{
-				title: 'Query Attention Weights Heatmap',
-				xaxis: { 
-					title: 'Token Index',
-					tickmode:'array',
-					tickvals: query.map((_, index) => index),
-					ticktext: query
-				},
-				yaxis: { 
-					title: 'Token Index',
-					tickmode:'array',
-					tickvals: query.map((_, index) => index),
-					ticktext: query
-				},
-				width: 300, // Customize the size as needed
-				height: 300,
-			}}
-		/>
+		<div>
+			<Plot
+				data={[
+					{
+						z: attentionData,
+						type: 'heatmap',
+						colorscale: 'Viridis',
+					}
+				]}
+				layout={{
+					title: 'Query Attention Weights Heatmap',
+					xaxis: { 
+						title: 'Token Index',
+						tickmode:'array',
+						tickvals: query.map((_, index) => index),
+						ticktext: query
+					},
+					yaxis: { 
+						title: 'Token Index',
+						tickmode:'array',
+						tickvals: query.map((_, index) => index),
+						ticktext: query
+					},
+					width: 300, // Customize the size as needed
+					height: 300,
+				}}
+			/>
+		</div>
+		
 	);
 };
 
