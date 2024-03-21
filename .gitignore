@@ -1,0 +1,10 @@
+Dev/data/*
+Dev/Embeddings/*
+Dev/corpus.json
+Notebooks/raw_data/*
+Notebooks/processed_data/*
+Notebooks/models/*
+Notebooks/tokenizer/*
+pytorchenv
+Notebooks/casehold_state.pth
+src/client/node_modules

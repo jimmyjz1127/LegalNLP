@@ -1,0 +1,59 @@
+Harvard Caselaw:
+    {
+        id : int,
+        url: string,
+        name: string,
+        name_abreviation : string,
+        decision_date : string,
+        docket_number : string,
+        first_page : int,
+        last_page : int,
+        citations : [
+            {
+                cite : string,
+                type : string
+            }
+        ],
+        volume : {
+            volume_number : int,
+            barcode : int,
+            url : string 
+        },
+        reporter : {
+            id : int,
+            full_name : string,
+            url : string
+        },
+        court : {
+            name_abreviation : string,
+            name : string,
+            id : int,
+            slug : string,
+            url : string
+        },
+        jurisdiction : {
+            name : string,
+            id : int,
+            slug : string,
+            url : string,
+            whitelisted : bool
+        },
+        cite_to : [],
+        casebody : {
+            status : string,
+            data : {
+                judges : [],
+                head_matter : string,
+                corrections : string,
+                opinions : [
+                    {
+                        text : string,
+                        author: string,
+                        type : string 
+                    }
+                ],
+                attorneys : [string]
+            }
+        }
+    }
+

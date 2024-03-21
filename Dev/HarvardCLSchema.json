@@ -1,0 +1,9 @@
+{
+    "name" : ["name"],
+    "main" : ["casebody", "data", "head_matter"],
+    "date" : ["decision_date"],
+    "jurisdictions" :["jurisdiction", "name_long"],
+    "court" : ["court", "name"],
+    "attorneys" : ["casebody", "data", "attorneys"],
+    "extra" : ["casebody", "data", "opinions"]
+}

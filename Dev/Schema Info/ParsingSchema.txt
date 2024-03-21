@@ -1,0 +1,10 @@
+{
+    name : [path, to, name],                     // name of document 
+    main : [path, to, body, of, content],        // main text body 
+    date : [path, to, date],                     // date of document 
+    jurisdiction : [path, to, jurisdiction],     // jursidiction of document 
+    judges : [path, to, judges],                 // judges involved 
+    court : [path, to, court],                   // courts associated 
+    attorneys : [path, to, attorneys],           // attorneys involved in case 
+    extra : [path, to, extra, text]              // any extra text involved such as opinions or summaries 
+}

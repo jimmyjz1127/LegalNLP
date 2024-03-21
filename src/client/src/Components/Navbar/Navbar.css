@@ -1,0 +1,26 @@
+#navbar-wrapper{
+    position:fixed;
+    top:0;
+
+    width:100vw;
+    height:10vh;
+
+    background-color: white;
+
+}
+
+#nav-left {
+    color :blue;
+    font-weight:800;
+    padding:20px;
+}
+
+#nav-right {
+    padding:20px;
+
+}
+
+#nav-right > *{
+    margin:5%;
+}
+
