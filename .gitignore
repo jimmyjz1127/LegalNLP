@@ -10,3 +10,5 @@ Notebooks/casehold_state.pth
 src/client/node_modules
 src/server/corpus.csv
 src/server/Embeddings/*
+src/server/attention.npy 
+src/server/faiss_index_file.index

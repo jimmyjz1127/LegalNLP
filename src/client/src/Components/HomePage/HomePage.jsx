@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -18,8 +18,12 @@ function HomePage(props){
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(0)
 
+    const [searchType, setSearchType] = useState()
+    const [selectedOption, setSelectedOption] = useState('');
+
     const searchQuery = async () => {
         setLoading(1)
+        setNumResults(0)
         try {
             const res = await Axios({
                 method:'POST',
@@ -41,11 +45,68 @@ function HomePage(props){
         }
     }
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                let res = await Axios({
+                    method: 'GET',
+                    withCredentials: true,
+                    data: {}, // Note: GET requests generally do not have a body. You might want to remove this if it's not needed.
+                    url: 'http://localhost:5000/searchType'
+                });
+                let type = res.data.searchType;
+                setSearchType(type);
+                if (type === '1') {
+                    setSelectedOption('Cross Encoder');
+                } else {
+                    setSelectedOption('Dual Encoder');
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        };
+    
+        fetchData();
+    }, []);
+    
+
+    const changeEncoding = async () => {
+        let type = '2'
+
+        if (document.getElementById('encoding-dropdown').value == 'Cross Encoder')  {
+            type = '1'
+        }
+        if (type != searchType ){
+            try {
+                let res = await Axios({
+                    method:'POST',
+                    withCredentials:true,
+                    data:{
+                        'searchType' : type
+                    },
+                    url:'http://localhost:5000/changeSearchType'
+                })
+                console.log(type)
+                setSearchType(type)
+                // if (type == '1')  setSelectedOption('Cross Encoder')
+                // else setSelectedOption('Dual Encoder')
+                // console.log(selectedOption)
+            } catch (err){
+                console.error(err)
+            }
+        }
+    }
+
     return (
         <div id="home-wrapper" className="flex col align-center justify-center">
             <div id='search-bar-modal' className="flex row align-center">
                 <input type='text' placeholder="Enter query..." id="search-bar-input" onChange={(e) => setQuery(e.target.value)}/>
                 <button id="search-btn" onClick={(e) => searchQuery()}>Search</button>
+
+                <select id="encoding-dropdown" onChange={(e) => changeEncoding()}>
+                    <option >Cross Encoder</option>
+                    <option >Dual Encoder</option>
+                </select>
 
             </div>
             <div id='results-wrapper'>

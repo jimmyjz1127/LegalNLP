@@ -12,3 +12,4 @@ Steps:
 1. Navigate to src/client
 2. Execute "npm install" from terminal 
 
+pip install -U scikit-learn torch faiss-cpu nltk transformers tqdm pandas flask flask-cors 
