@@ -296,10 +296,6 @@ class SearchEngine():
             # Average attention across heads, focusing on the query tokens only
             query_attention_weights = last_layer_attention[0, :, start_index:end_index, start_index:end_index].mean(dim=0).cpu().numpy()
 
-            # query_attention_per_token = query_attention_weights.mean(dim=1).tolist()
-
-            # # Append the averaged attention per query token to your list
-            # query_attention_list.append(query_attention_per_token)
 
             query_attention_matrix_serialized = json.dumps(query_attention_weights.tolist())
             query_attention_list.append(query_attention_matrix_serialized)

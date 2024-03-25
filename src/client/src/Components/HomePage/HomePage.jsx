@@ -9,6 +9,8 @@ import Result from './../Result/Result'
 
 import LoadingIcon from './../../Assets/loading.gif'
 
+import SearchIcon from './../../Assets/search.png'
+
 import "./HomePage.css"
 
 function HomePage(props){
@@ -99,16 +101,22 @@ function HomePage(props){
 
     return (
         <div id="home-wrapper" className="flex col align-center justify-center">
-            <div id='search-bar-modal' className="flex row align-center">
-                <input type='text' placeholder="Enter query..." id="search-bar-input" onChange={(e) => setQuery(e.target.value)}/>
-                <button id="search-btn" onClick={(e) => searchQuery()}>Search</button>
+            <div id='nav-bar' className="flex row align-center">
+                <div id='search-bar-modal' className="flex row align-center ">
+                    <div className="flex row align-center" id='search-bar-wrapper'>
+                        <img id='search-icon' src={SearchIcon}/>
+                        <input type='text' placeholder="Enter query..." id="search-bar-input" onChange={(e) => setQuery(e.target.value)}/>
+                    </div>
+                    <button id="search-btn" onClick={(e) => searchQuery()}>Search</button>
 
-                <select id="encoding-dropdown" onChange={(e) => changeEncoding()}>
-                    <option >Cross Encoder</option>
-                    <option >Dual Encoder</option>
-                </select>
+                    <select id="encoding-dropdown" onChange={(e) => changeEncoding()}>
+                        <option >Cross Encoder</option>
+                        <option >Dual Encoder</option>
+                    </select>
 
+                </div>
             </div>
+            
             <div id='results-wrapper'>
                 <div id='results-top-bar' className="flex row align-center justify-between">
                     <h2>Result Summary</h2>

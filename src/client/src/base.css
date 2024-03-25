@@ -59,3 +59,7 @@ button:active{
     border-radius: var(--default-radius);
     padding:3px;
 }
+
+textarea:focus, input:focus{
+    outline: none;
+}
