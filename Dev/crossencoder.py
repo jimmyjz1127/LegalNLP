@@ -43,7 +43,7 @@ class crossencoder():
 
         scores = self.model.predict(pairs)
 
-        for i in range(0,len(scores)):
+        for i in range(0,):
             print('{:.8f}'.format(scores[i]), self.documents[i]['name'])
 
 
