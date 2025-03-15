@@ -23,7 +23,7 @@ const BarChart = (props) => {
 					},
 				]}
 				layout={{
-					width: 620,
+					width: 820,
 					height: 400,
 					title: 'Top 10 Tokens by Attention',
 					xaxis: { 

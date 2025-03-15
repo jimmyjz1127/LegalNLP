@@ -55,7 +55,7 @@ function Result(props){
                 </div>
             </div>
             {showInsights &&
-                <div className="insight-box flex row align-center justify-between">
+                <div className="insight-box flex row align-center justify-evenly">
                     <AttentionVisual attentionData={JSON.parse(data.attention)} query={JSON.parse(data.query_tokens)}/>
                     <BarChart data={barData}/>
                 </div>

@@ -210,6 +210,8 @@ class tfidf_corp:
             self.vectorizer, self.corpus_tfidf = pickle.load(pickle_file) # need to save both vectorizer object and matrix to file
 
 
+
+
 class SearchEngine():
     def __init__(self, model_path, corpus_path, flag):
         self.df = pd.read_csv(corpus_path)
@@ -301,13 +303,11 @@ class SearchEngine():
             query_attention_list.append(query_attention_matrix_serialized)
 
 
-
         # Add similarity scores to the dataframe
         dataframe['similarity'] = similarity_scores 
         dataframe['document_top_tokens'] = document_top_tokens_list
         dataframe['attention'] = query_attention_list
         dataframe['query_tokens'] = query_tokens_list
-        # dataframe['attention'] = dataframe['attention'].apply(lambda x: json.dumps(x))
         
         # Sort the dataframe by similarity scores in descending order
         sorted_dataframe = dataframe.sort_values(by='similarity', ascending=False)
@@ -317,7 +317,7 @@ class SearchEngine():
 
 
     def cross_search(self, query):
-        top_k_tfidf = self.tf_idf.search(query, 20)
+        top_k_tfidf = self.tf_idf.search(query, 100)
         df_rows = [row for row, _ in top_k_tfidf]
         dataframe = pd.concat(df_rows, axis=1).transpose()
         
@@ -394,12 +394,15 @@ class SearchEngine():
 
 
 class FlaskServer:
+    '''
+    Flask server for handling backend end points 
+    '''
     def __init__(self, flag):
         self.searchType = '1'
         self.app = Flask(__name__)
         CORS(self.app, supports_credentials=True, origins="http://localhost:3000", allow_headers=["Content-Type"])
         self.setup_routes()
-        self.engine = SearchEngine('./../../Notebooks/models/parallel_combined', 'corpus.csv', flag)
+        self.engine = SearchEngine('jimmyjz1127/multi_parallel', 'corpus.csv', flag)
 
     def setup_routes(self):
         @self.app.route('/', methods=['GET'])

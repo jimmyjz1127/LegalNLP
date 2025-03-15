@@ -30,8 +30,8 @@ const AttentionVisual = (props) => {
 						tickvals: query.map((_, index) => index),
 						ticktext: query
 					},
-					width: 300, // Customize the size as needed
-					height: 300,
+					width: 400, // Customize the size as needed
+					height: 400,
 				}}
 			/>
 		</div>
