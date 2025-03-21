@@ -35,23 +35,23 @@ Model paths :
 
 
 ## 4 File Structure 
-Dev/                    : Contains developmental code 
-Notebooks               : All notebooks used for model fine-tuning and evaluation 
-  Dev/                  : developmental notebooks for data pre-processing, cleaning, or experimenting 
-  processed_data        : contains training datasets (note that the files are reduced subsets of the origina datasets)
-  evaluate.ipynb        : Notebook for evaluating the performance of the core encoder layers of the fine-tuned models 
-  lm_benchmark.ipynb    : for evaluating the Witten-Bell trigram performance 
-  mlm_train.ipynb       : for training the masked-language model 
-  parallel_train.ipynb  : Implements the multi-task parallel training routine 
-  qa_train.ipynb        : Implements the selective question and answering training routine 
-  te_train.ipynb        : Implements the textual entailment training routine 
-src 
-  client                : Contains React.js code for implementing user interface and frontend 
-  server                : Contains backend python code 
-    Embeddings/         
-      tfidf.pkl         : Matrix and vectorize for TF-IDF engine 
-    corpus.csv          : Corpus of legal documents for search 
-    app.py              : Python Flask server which implements the search piplines 
-requirements.txt        : Python dependencies 
-README.md
-.gitignore
+Dev/                    : Contains developmental code  
+Notebooks               : All notebooks used for model fine-tuning and evaluation  
+  Dev/                  : developmental notebooks for data pre-processing, cleaning, or experimenting  
+  processed_data        : contains training datasets (note that the files are reduced subsets of the origina datasets)  
+  evaluate.ipynb        : Notebook for evaluating the performance of the core encoder layers of the fine-tuned models  
+  lm_benchmark.ipynb    : for evaluating the Witten-Bell trigram performance  
+  mlm_train.ipynb       : for training the masked-language model  
+  parallel_train.ipynb  : Implements the multi-task parallel training routine  
+  qa_train.ipynb        : Implements the selective question and answering training routine  
+  te_train.ipynb        : Implements the textual entailment training routine  
+src  
+  client                : Contains React.js code for implementing user interface and frontend  
+  server                : Contains backend python code  
+    Embeddings/          
+      tfidf.pkl         : Matrix and vectorize for TF-IDF engine  
+    corpus.csv          : Corpus of legal documents for search   
+    app.py              : Python Flask server which implements the search piplines   
+requirements.txt        : Python dependencies   
+README.md  
+.gitignore  
